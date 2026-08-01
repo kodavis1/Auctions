@@ -1,0 +1,56 @@
+# Auto-refreshes the auction search HTML by running AuctionSearch.ipynb
+# on a schedule and committing the updated output back to this repo.
+#
+# BEFORE COMMITTING, check:
+#   1. The active "cron:" line below -> pick ONE time, delete the others
+#   2. That requirements.txt exists in the repo root (see step 4 in the instructions)
+
+name: Refresh Auction Search
+
+on:
+  schedule:
+    # EST (winter, UTC-5) / EDT (summer, UTC-4) -> UTC options:
+    #   6:00 AM EST / 7:00 AM EDT  -> '0 11 * * *'
+    #   7:00 AM EST / 8:00 AM EDT  -> '0 12 * * *'
+    #   8:00 AM EST / 9:00 AM EDT  -> '0 13 * * *'
+    #   9:00 AM EST / 10:00 AM EDT -> '0 14 * * *'
+    - cron: '0 12 * * *'   # <-- currently set to 7am EST / 8am EDT
+
+  # Lets you manually trigger this from the Actions tab (Run workflow button),
+  # useful for testing without waiting for the schedule.
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      # Pulls your repo's code so the notebook is available to run
+      - uses: actions/checkout@v4
+
+      # Installs Python on the runner
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Installs your notebook's dependencies, plus the tools needed to run
+      # a notebook headlessly from the command line.
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install nbconvert jupyter
+
+      # Executes AuctionSearch.ipynb top to bottom and saves the results
+      # back into the same file. Whatever code inside it writes the HTML
+      # output will run as part of this.
+      - name: Run scraper notebook
+        run: jupyter nbconvert --to notebook --execute --inplace AuctionSearch.ipynb
+
+      # Commits and pushes the updated file(s) back to the repo,
+      # but only if something actually changed (avoids empty commits).
+      - name: Commit updated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Auto-refresh auction data"
+          git push
