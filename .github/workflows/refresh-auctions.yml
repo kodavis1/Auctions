@@ -2,12 +2,7 @@ name: Refresh Auction Search
 
 on:
   schedule:
-    # EST (winter, UTC-5) / EDT (summer, UTC-4) -> UTC options:
-    #   6:00 AM EST / 7:00 AM EDT  -> '0 11 * * *'
-    #   7:00 AM EST / 8:00 AM EDT  -> '0 12 * * *'
-    #   8:00 AM EST / 9:00 AM EDT  -> '0 13 * * *'
-    #   9:00 AM EST / 10:00 AM EDT -> '0 14 * * *'
-    - cron: '0 12 * * *'   # currently set to 7am EST / 8am EDT
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:
