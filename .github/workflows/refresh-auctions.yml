@@ -1,0 +1,41 @@
+name: Refresh Auction Search
+
+on:
+  schedule:
+    # EST (winter, UTC-5) / EDT (summer, UTC-4) -> UTC options:
+    #   6:00 AM EST / 7:00 AM EDT  -> '0 11 * * *'
+    #   7:00 AM EST / 8:00 AM EDT  -> '0 12 * * *'
+    #   8:00 AM EST / 9:00 AM EDT  -> '0 13 * * *'
+    #   9:00 AM EST / 10:00 AM EDT -> '0 14 * * *'
+    - cron: '0 12 * * *'   # currently set to 7am EST / 8am EDT
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+          HIBID_USERNAME: ${{ secrets.HIBID_USERNAME }}
+          HIBID_PASSWORD: ${{ secrets.HIBID_PASSWORD }}
+          EBTH_API_TOKEN: ${{ secrets.EBTH_API_TOKEN }}
+          EBTH_SESSION_COOKIE: ${{ secrets.EBTH_SESSION_COOKIE }}
+          EBTH_USER_ID: ${{ secrets.EBTH_USER_ID }}
+        run: python AuctionSearch.py
+
+      - name: Commit updated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Auto-refresh auction data"
+          git push
