@@ -4,9 +4,22 @@ import pandas as pd
 from datetime import datetime, timezone, timedelta
 import webbrowser
 
+# ══════════════════════════════════════════════════════════════
 # ── HIBID AUTH ────────────────────────────────────────────────
 # Reads credentials from environment variables / GitHub Actions
 # secrets: HIBID_USERNAME, HIBID_PASSWORD, HIBID_USER_ID
+
+def get_hibid_token(username, password):
+    r = requests.post(
+        "https://hibid-api.io/pf/main/v1/auth/login",
+        json={"id": username, "pwd": password},
+        headers={"Content-Type": "application/json"},
+        timeout=15
+    )
+    r.raise_for_status()
+    data = r.json()["data"]
+    return data["access"]
+
 HIBID_USERNAME   = os.environ.get("HIBID_USERNAME", "")
 HIBID_PASSWORD   = os.environ.get("HIBID_PASSWORD", "")
 HIBID_AUTH_TOKEN = get_hibid_token(HIBID_USERNAME, HIBID_PASSWORD) if HIBID_USERNAME and HIBID_PASSWORD else ""
@@ -16,10 +29,10 @@ HIBID_AUTH_TOKEN = get_hibid_token(HIBID_USERNAME, HIBID_PASSWORD) if HIBID_USER
 # login request is confirmed (see get_ebth_session above).
 # Reads from environment variables / GitHub Actions secrets:
 # EBTH_API_TOKEN, EBTH_SESSION_COOKIE, EBTH_USER_ID
+EBTH_API_TOKEN      = os.environ.get("EBTH_API_TOKEN", "")
+EBTH_SESSION_COOKIE = os.environ.get("EBTH_SESSION_COOKIE", "")
+EBTH_USER_ID        = os.environ.get("EBTH_USER_ID", "")
 
-EBTH_API_TOKEN      = os.environ.get("7a2ab11cfe70777231c82cf4325c6e96", "")
-EBTH_SESSION_COOKIE = os.environ.get("__cmpconsent98755=CQn6pwgQn6pwgAfTdBENCpFgAAAAAAAAAAigF5wBAAKgAgABUAvMC84AgAFQAQAAqAXmAAA; __cmpcccu98755=aCQn8hIYgBuS8wEWmtWMIyJiVqYSrV0A8hDILAQGoQagYAA; __cmpccpausps=1YNN; ajs_anonymous_id=379238e5-bdfa-46df-ade2-90fe9aa3cd98;", "")
-EBTH_USER_ID        = os.environ.get("8191099", "")
 
 # ══════════════════════════════════════════════════════════════
 # ── SHARED KEYWORD FILTERS (used by all tabs unless overridden)
