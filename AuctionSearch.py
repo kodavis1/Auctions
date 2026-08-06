@@ -1118,9 +1118,3 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 output_path = os.path.join(script_dir, "hibid_results.html")
 
 generate_html(hibid_jewelry, hibid_brands, ebth_lots, output_path, run_time)
-
-success = webbrowser.open(f"file://{output_path}")
-print("Browser open() returned:", success)
-print("File exists:", os.path.exists(output_path))
-
-webbrowser.open(output_path)
